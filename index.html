@@ -27,11 +27,21 @@
         animation: {
           'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
           'float': 'float 6s ease-in-out infinite',
+          'boost': 'boost 5s ease-in-out infinite',
+          'gradient-x': 'gradient-x 6s ease infinite',
         },
         keyframes: {
           float: {
             '0%, 100%': { transform: 'translateY(0)' },
             '50%': { transform: 'translateY(-15px)' },
+          },
+          boost: {
+            '0%, 100%': { left: '0%' },
+            '50%': { left: '100%' },
+          },
+          'gradient-x': {
+            '0%, 100%': { 'background-position': '0% 50%' },
+            '50%': { 'background-position': '100% 50%' },
           }
         }
       }
@@ -39,6 +49,7 @@
   }
 </script>
 <style>
+  html { scroll-behavior: smooth; }
   body {
     font-family: 'Tajawal', sans-serif;
     background-color: #05070d;
@@ -46,6 +57,13 @@
       radial-gradient(circle at 15% 20%, rgba(0, 212, 255, 0.15), transparent 35%),
       radial-gradient(circle at 85% 15%, rgba(255, 122, 26, 0.15), transparent 35%),
       radial-gradient(circle at 50% 90%, rgba(0, 212, 255, 0.1), transparent 40%);
+  }
+  .bg-grid {
+    background-image:
+      linear-gradient(rgba(0, 212, 255, 0.06) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0, 212, 255, 0.06) 1px, transparent 1px);
+    background-size: 40px 40px;
+    mask-image: radial-gradient(ellipse 60% 50% at 50% 40%, black 40%, transparent 80%);
   }
   .glass {
     background: rgba(15, 20, 35, 0.6);
@@ -59,9 +77,16 @@
     background-clip: text;
     color: transparent;
   }
+  .gradient-text-animated {
+    background: linear-gradient(90deg, #00d4ff, #ff7a1a, #00d4ff);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
   .rank-highlight {
     border: 1px solid rgba(0, 212, 255, 0.3);
-    transition: all 0.3s ease;
+    transition: all 0.35s ease;
   }
   .rank-highlight:hover {
     transform: translateY(-8px);
@@ -81,38 +106,86 @@
     background: linear-gradient(90deg, transparent, #00d4ff, #ff7a1a, transparent);
     height: 2px;
   }
+  .rank-badge {
+    width: 3rem; height: 3rem;
+    border-radius: 9999px;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: inset 0 0 0 2px rgba(255,255,255,0.15), 0 4px 14px rgba(0,0,0,0.4);
+    flex-shrink: 0;
+  }
+  .reveal {
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+  }
+  .reveal.in-view {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  #mobile-menu {
+    transition: opacity 0.25s ease, visibility 0.25s ease;
+  }
+  .scrolled-header {
+    background: rgba(5, 7, 13, 0.85) !important;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
 </style>
 </head>
 <body class="text-white min-h-screen overflow-x-hidden">
 
   <!-- Header -->
-  <header class="fixed top-0 inset-x-0 z-40 glass">
+  <header id="site-header" class="fixed top-0 inset-x-0 z-40 transition-colors duration-300">
     <div class="max-w-7xl mx-auto px-5 py-4 flex items-center justify-between">
-      <div class="flex items-center gap-2">
+      <a href="#hero" class="flex items-center gap-2">
+        <span class="w-9 h-9 rounded-lg bg-gradient-to-br from-rlblue to-rlorange flex items-center justify-center font-black text-dark text-sm shadow-glow-blue">3</span>
         <span class="text-2xl md:text-3xl font-black tracking-tight">
           <span class="gradient-text">3rab</span><span class="text-white">.store</span>
         </span>
-      </div>
+      </a>
       <nav class="hidden md:flex items-center gap-8 text-sm font-bold text-gray-300">
         <a href="#hero" class="hover:text-rlblue transition">الرئيسية</a>
         <a href="#pricing" class="hover:text-rlblue transition">الأسعار</a>
+        <a href="#how" class="hover:text-rlblue transition">كيف تطلب</a>
         <a href="#why" class="hover:text-rlblue transition">ليش نحن؟</a>
         <a href="#faq" class="hover:text-rlblue transition">الأسئلة الشائعة</a>
       </nav>
-      <a href="https://wa.me/97335596257?text=هلا%2C%20أبي%20أطلب%20خدمة%20رفع%20رانك%20في%20روكيت%20ليق%202v2" target="_blank" rel="noopener"
-         class="hidden md:flex items-center gap-2 bg-gradient-to-r from-rlblue to-rlorange text-dark font-black px-5 py-2.5 rounded-full text-sm hover:scale-105 transition shadow-glow-blue">
-        اطلب الآن
-      </a>
+      <div class="flex items-center gap-3">
+        <a href="https://wa.me/97335596257?text=هلا%2C%20أبي%20أطلب%20خدمة%20رفع%20رانك%20في%20روكيت%20ليق%202v2" target="_blank" rel="noopener"
+           class="hidden md:flex items-center gap-2 bg-gradient-to-r from-rlblue to-rlorange text-dark font-black px-5 py-2.5 rounded-full text-sm hover:scale-105 transition shadow-glow-blue">
+          اطلب الآن
+        </a>
+        <button id="menu-btn" aria-label="افتح القائمة" class="md:hidden w-10 h-10 flex items-center justify-center rounded-lg glass">
+          <svg id="menu-icon-open" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+          </svg>
+          <svg id="menu-icon-close" class="w-6 h-6 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
     </div>
   </header>
 
+  <!-- Mobile menu overlay -->
+  <div id="mobile-menu" class="fixed inset-0 z-30 bg-dark/98 backdrop-blur-lg flex flex-col items-center justify-center gap-8 opacity-0 invisible md:hidden">
+    <a href="#hero" class="mobile-link text-2xl font-bold">الرئيسية</a>
+    <a href="#pricing" class="mobile-link text-2xl font-bold">الأسعار</a>
+    <a href="#how" class="mobile-link text-2xl font-bold">كيف تطلب</a>
+    <a href="#why" class="mobile-link text-2xl font-bold">ليش نحن؟</a>
+    <a href="#faq" class="mobile-link text-2xl font-bold">الأسئلة الشائعة</a>
+    <a href="https://wa.me/97335596257?text=هلا%2C%20أبي%20أطلب%20خدمة%20رفع%20رانك%20في%20روكيت%20ليق%202v2" target="_blank" rel="noopener"
+       class="mt-4 flex items-center gap-2 bg-gradient-to-r from-rlblue to-rlorange text-dark font-black px-8 py-3 rounded-full text-lg">
+      تواصل واتساب
+    </a>
+  </div>
+
   <!-- Hero -->
-  <section id="hero" class="relative min-h-screen flex items-center justify-center px-5 pt-28 pb-16">
+  <section id="hero" class="relative min-h-screen flex items-center justify-center px-5 pt-28 pb-16 bg-grid">
     <!-- decorative glows -->
     <div class="absolute top-1/4 -left-20 w-72 h-72 bg-rlblue/20 rounded-full blur-3xl animate-pulse-slow"></div>
     <div class="absolute bottom-1/4 -right-20 w-72 h-72 bg-rlorange/20 rounded-full blur-3xl animate-pulse-slow"></div>
 
-    <div class="relative z-10 max-w-4xl mx-auto text-center">
+    <div class="relative z-10 max-w-5xl mx-auto text-center">
       <div class="inline-flex items-center gap-2 glass rounded-full px-4 py-1.5 mb-6 text-xs md:text-sm font-bold text-rlblue">
         <span class="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span>
         متاح الآن • رفع رانك 2v2 بسرعة وأمان
@@ -121,7 +194,7 @@
       <h1 class="text-4xl sm:text-5xl md:text-7xl font-black leading-tight mb-6">
         اطلع من رانكك الحالي
         <br>
-        إلى <span class="gradient-text">أعلى مستوى</span> في روكيت ليق
+        إلى <span class="gradient-text-animated animate-gradient-x">أعلى مستوى</span> في روكيت ليق
       </h1>
 
       <p class="text-lg md:text-xl text-gray-300 max-w-2xl mx-auto mb-10 leading-relaxed">
@@ -130,7 +203,7 @@
         <span class="text-rlorange font-bold">الشامبيون</span> اليوم!
       </p>
 
-      <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+      <div class="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
         <a href="https://wa.me/97335596257?text=هلا%2C%20أبي%20أطلب%20خدمة%20رفع%20رانك%20في%20روكيت%20ليق%202v2"
            target="_blank" rel="noopener"
            class="w-full sm:w-auto flex items-center justify-center gap-3 bg-[#25D366] text-white font-black px-8 py-4 rounded-full text-lg hover:scale-105 transition whatsapp-float">
@@ -142,6 +215,104 @@
           شوف الأسعار
         </a>
       </div>
+
+      <!-- Trust stats -->
+      <div class="grid grid-cols-3 gap-4 max-w-2xl mx-auto mb-16">
+        <div class="glass rounded-2xl py-4">
+          <div class="text-2xl md:text-3xl font-black gradient-text">+500</div>
+          <div class="text-xs md:text-sm text-gray-400 font-bold mt-1">رتبة تم رفعها</div>
+        </div>
+        <div class="glass rounded-2xl py-4">
+          <div class="text-2xl md:text-3xl font-black gradient-text">4.9<span class="text-lg">/5</span></div>
+          <div class="text-xs md:text-sm text-gray-400 font-bold mt-1">تقييم العملاء</div>
+        </div>
+        <div class="glass rounded-2xl py-4">
+          <div class="text-2xl md:text-3xl font-black gradient-text">24س</div>
+          <div class="text-xs md:text-sm text-gray-400 font-bold mt-1">متوسط التنفيذ</div>
+        </div>
+      </div>
+
+      <!-- Rank ladder visual -->
+      <div class="hidden lg:block relative max-w-4xl mx-auto px-6">
+        <div class="absolute top-6 left-6 right-6 h-0.5 bg-gradient-to-r from-orange-700 via-rlblue to-purple-500 rounded-full"></div>
+        <div class="absolute top-[22px] w-3 h-3 rounded-full bg-white shadow-[0_0_12px_4px_rgba(0,212,255,0.8)] animate-boost"></div>
+        <div class="relative flex items-center justify-between">
+          <div class="flex flex-col items-center gap-2">
+            <div class="rank-badge bg-gradient-to-br from-orange-700 to-orange-900">
+              <svg class="w-6 h-6 text-orange-200" fill="currentColor" viewBox="0 0 20 20"><path d="M10 1l2.39 5.51L18 7.24l-4 4.24L15.02 18 10 15.27 4.98 18 6 11.48 2 7.24l5.61-.73L10 1z"/></svg>
+            </div>
+            <span class="text-xs font-bold text-gray-400">برونز</span>
+          </div>
+          <div class="flex flex-col items-center gap-2">
+            <div class="rank-badge bg-gradient-to-br from-gray-300 to-gray-500">
+              <svg class="w-6 h-6 text-gray-100" fill="currentColor" viewBox="0 0 20 20"><path d="M10 1l2.39 5.51L18 7.24l-4 4.24L15.02 18 10 15.27 4.98 18 6 11.48 2 7.24l5.61-.73L10 1z"/></svg>
+            </div>
+            <span class="text-xs font-bold text-gray-400">سلفر</span>
+          </div>
+          <div class="flex flex-col items-center gap-2">
+            <div class="rank-badge bg-gradient-to-br from-yellow-400 to-amber-600">
+              <svg class="w-6 h-6 text-yellow-100" fill="currentColor" viewBox="0 0 20 20"><path d="M10 1l2.39 5.51L18 7.24l-4 4.24L15.02 18 10 15.27 4.98 18 6 11.48 2 7.24l5.61-.73L10 1z"/></svg>
+            </div>
+            <span class="text-xs font-bold text-gray-400">قولد</span>
+          </div>
+          <div class="flex flex-col items-center gap-2">
+            <div class="rank-badge bg-gradient-to-br from-cyan-300 to-teal-500">
+              <svg class="w-6 h-6 text-cyan-50" fill="currentColor" viewBox="0 0 20 20"><path d="M10 1l2.39 5.51L18 7.24l-4 4.24L15.02 18 10 15.27 4.98 18 6 11.48 2 7.24l5.61-.73L10 1z"/></svg>
+            </div>
+            <span class="text-xs font-bold text-gray-400">بلاتينيوم</span>
+          </div>
+          <div class="flex flex-col items-center gap-2">
+            <div class="rank-badge bg-gradient-to-br from-sky-400 to-blue-600">
+              <svg class="w-6 h-6 text-sky-50" fill="currentColor" viewBox="0 0 20 20"><path d="M10 1l2.39 5.51L18 7.24l-4 4.24L15.02 18 10 15.27 4.98 18 6 11.48 2 7.24l5.61-.73L10 1z"/></svg>
+            </div>
+            <span class="text-xs font-bold text-gray-400">دايموند</span>
+          </div>
+          <div class="flex flex-col items-center gap-2">
+            <div class="rank-badge bg-gradient-to-br from-purple-500 to-fuchsia-700 shadow-glow-orange">
+              <svg class="w-6 h-6 text-purple-50" fill="currentColor" viewBox="0 0 20 20"><path d="M2.5 6l3 2 4.5-5 4.5 5 3-2-1.5 9h-12L2.5 6zm2.4 10.5h10.2v1.5H4.9v-1.5z"/></svg>
+            </div>
+            <span class="text-xs font-bold text-rlorange">شامب</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="max-w-5xl mx-auto divider-glow"></div>
+
+  <!-- How it works -->
+  <section id="how" class="py-20 px-5">
+    <div class="max-w-6xl mx-auto">
+      <div class="text-center mb-14 reveal">
+        <h2 class="text-3xl md:text-5xl font-black mb-4">كيف <span class="gradient-text">تطلب</span>؟</h2>
+        <p class="text-gray-400 max-w-xl mx-auto">ثلاث خطوات بسيطة وتبدأ رحلتك نحو رانك أعلى</p>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="reveal glass rounded-2xl p-8 text-center relative">
+          <div class="absolute -top-4 -right-4 w-9 h-9 rounded-full bg-gradient-to-br from-rlblue to-rlorange text-dark font-black flex items-center justify-center">1</div>
+          <div class="w-14 h-14 mx-auto mb-5 rounded-xl bg-rlblue/15 flex items-center justify-center">
+            <svg class="w-7 h-7 text-rlblue" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a5.969 5.969 0 01-.474-.065 4.48 4.48 0 00.978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.22 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z" /></svg>
+          </div>
+          <h3 class="font-black text-lg mb-2">تواصل معنا</h3>
+          <p class="text-gray-400 text-sm leading-relaxed">راسلنا على واتساب وأخبرنا رانكك الحالي والرانك المطلوب.</p>
+        </div>
+        <div class="reveal glass rounded-2xl p-8 text-center relative" style="transition-delay:0.1s">
+          <div class="absolute -top-4 -right-4 w-9 h-9 rounded-full bg-gradient-to-br from-rlblue to-rlorange text-dark font-black flex items-center justify-center">2</div>
+          <div class="w-14 h-14 mx-auto mb-5 rounded-xl bg-rlorange/15 flex items-center justify-center">
+            <svg class="w-7 h-7 text-rlorange" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3M3.75 4.5h16.5a1.5 1.5 0 011.5 1.5v12a1.5 1.5 0 01-1.5 1.5H3.75a1.5 1.5 0 01-1.5-1.5V6a1.5 1.5 0 011.5-1.5z" /></svg>
+          </div>
+          <h3 class="font-black text-lg mb-2">اتفق على السعر</h3>
+          <p class="text-gray-400 text-sm leading-relaxed">نأكد لك السعر حسب جدول الأسعار الواضح ونحدد موعد البدء.</p>
+        </div>
+        <div class="reveal glass rounded-2xl p-8 text-center relative" style="transition-delay:0.2s">
+          <div class="absolute -top-4 -right-4 w-9 h-9 rounded-full bg-gradient-to-br from-rlblue to-rlorange text-dark font-black flex items-center justify-center">3</div>
+          <div class="w-14 h-14 mx-auto mb-5 rounded-xl bg-rlblue/15 flex items-center justify-center">
+            <svg class="w-7 h-7 text-rlblue" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+          </div>
+          <h3 class="font-black text-lg mb-2">استلم رانكك الجديد</h3>
+          <p class="text-gray-400 text-sm leading-relaxed">فريقنا يبدأ فوراً ويوصلك للرانك المطلوب بسرعة وأمان تام.</p>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -150,7 +321,7 @@
   <!-- Pricing -->
   <section id="pricing" class="py-20 px-5">
     <div class="max-w-6xl mx-auto">
-      <div class="text-center mb-6">
+      <div class="text-center mb-6 reveal">
         <h2 class="text-3xl md:text-5xl font-black mb-4">
           أسعار <span class="gradient-text">رفع الرانك</span>
         </h2>
@@ -160,7 +331,7 @@
       </div>
 
       <!-- Limited time alert -->
-      <div class="max-w-3xl mx-auto mb-12 glass border border-rlorange/50 rounded-2xl px-6 py-4 flex items-center gap-4 shadow-glow-orange">
+      <div class="reveal max-w-3xl mx-auto mb-12 glass border border-rlorange/50 rounded-2xl px-6 py-4 flex items-center gap-4 shadow-glow-orange">
         <div class="shrink-0 w-11 h-11 rounded-full bg-rlorange/20 flex items-center justify-center">
           <svg class="w-6 h-6 text-rlorange" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
@@ -174,14 +345,19 @@
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-5">
 
         <!-- Card 1 -->
-        <div class="rank-highlight glass rounded-2xl p-6 flex flex-col items-center text-center">
+        <div class="reveal rank-highlight glass rounded-2xl p-6 flex flex-col items-center text-center">
           <div class="text-xs font-bold text-gray-400 mb-4 uppercase tracking-wider">المسار</div>
-          <div class="flex items-center justify-center gap-2 text-sm font-black mb-6">
-            <span class="text-orange-400">برونز</span>
-            <svg class="w-4 h-4 text-rlblue" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M12.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
-            <span class="text-gray-300">سلفر</span>
+          <div class="flex items-center justify-center gap-2 mb-6">
+            <div class="rank-badge w-10 h-10 bg-gradient-to-br from-orange-700 to-orange-900">
+              <svg class="w-5 h-5 text-orange-200" fill="currentColor" viewBox="0 0 20 20"><path d="M10 1l2.39 5.51L18 7.24l-4 4.24L15.02 18 10 15.27 4.98 18 6 11.48 2 7.24l5.61-.73L10 1z"/></svg>
+            </div>
+            <svg class="w-5 h-5 text-rlblue" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M12.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
+            <div class="rank-badge w-10 h-10 bg-gradient-to-br from-gray-300 to-gray-500">
+              <svg class="w-5 h-5 text-gray-100" fill="currentColor" viewBox="0 0 20 20"><path d="M10 1l2.39 5.51L18 7.24l-4 4.24L15.02 18 10 15.27 4.98 18 6 11.48 2 7.24l5.61-.73L10 1z"/></svg>
+            </div>
           </div>
-          <div class="text-4xl font-black gradient-text mb-1">6</div>
+          <div class="text-xs font-black mb-1"><span class="text-orange-400">برونز</span> <span class="text-gray-500">←</span> <span class="text-gray-300">سلفر</span></div>
+          <div class="text-4xl font-black gradient-text mb-1 mt-3">6</div>
           <div class="text-sm font-bold text-gray-400 mb-6">ريال سعودي</div>
           <a href="https://wa.me/97335596257?text=هلا%2C%20أبي%20أطلب%20رفع%20رانك%20من%20برونز%20إلى%20سلفر%20(6%20ريال)"
              target="_blank" rel="noopener"
@@ -191,14 +367,19 @@
         </div>
 
         <!-- Card 2 -->
-        <div class="rank-highlight glass rounded-2xl p-6 flex flex-col items-center text-center">
+        <div class="reveal rank-highlight glass rounded-2xl p-6 flex flex-col items-center text-center" style="transition-delay:0.05s">
           <div class="text-xs font-bold text-gray-400 mb-4 uppercase tracking-wider">المسار</div>
-          <div class="flex items-center justify-center gap-2 text-sm font-black mb-6">
-            <span class="text-gray-300">سلفر</span>
-            <svg class="w-4 h-4 text-rlblue" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M12.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
-            <span class="text-yellow-400">قولد</span>
+          <div class="flex items-center justify-center gap-2 mb-6">
+            <div class="rank-badge w-10 h-10 bg-gradient-to-br from-gray-300 to-gray-500">
+              <svg class="w-5 h-5 text-gray-100" fill="currentColor" viewBox="0 0 20 20"><path d="M10 1l2.39 5.51L18 7.24l-4 4.24L15.02 18 10 15.27 4.98 18 6 11.48 2 7.24l5.61-.73L10 1z"/></svg>
+            </div>
+            <svg class="w-5 h-5 text-rlblue" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M12.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
+            <div class="rank-badge w-10 h-10 bg-gradient-to-br from-yellow-400 to-amber-600">
+              <svg class="w-5 h-5 text-yellow-100" fill="currentColor" viewBox="0 0 20 20"><path d="M10 1l2.39 5.51L18 7.24l-4 4.24L15.02 18 10 15.27 4.98 18 6 11.48 2 7.24l5.61-.73L10 1z"/></svg>
+            </div>
           </div>
-          <div class="text-4xl font-black gradient-text mb-1">10</div>
+          <div class="text-xs font-black mb-1"><span class="text-gray-300">سلفر</span> <span class="text-gray-500">←</span> <span class="text-yellow-400">قولد</span></div>
+          <div class="text-4xl font-black gradient-text mb-1 mt-3">10</div>
           <div class="text-sm font-bold text-gray-400 mb-6">ريال سعودي</div>
           <a href="https://wa.me/97335596257?text=هلا%2C%20أبي%20أطلب%20رفع%20رانك%20من%20سلفر%20إلى%20قولد%20(10%20ريال)"
              target="_blank" rel="noopener"
@@ -208,17 +389,22 @@
         </div>
 
         <!-- Card 3 - featured -->
-        <div class="relative rank-highlight glass rounded-2xl p-6 flex flex-col items-center text-center border-rlorange/60 shadow-glow-orange scale-100 lg:scale-105">
+        <div class="reveal relative rank-highlight glass rounded-2xl p-6 flex flex-col items-center text-center border-rlorange/60 shadow-glow-orange scale-100 lg:scale-105" style="transition-delay:0.1s">
           <div class="absolute -top-3 bg-gradient-to-r from-rlblue to-rlorange text-dark text-[11px] font-black px-3 py-1 rounded-full">
             الأكثر طلباً
           </div>
           <div class="text-xs font-bold text-gray-400 mb-4 uppercase tracking-wider">المسار</div>
-          <div class="flex items-center justify-center gap-2 text-sm font-black mb-6">
-            <span class="text-yellow-400">قولد</span>
-            <svg class="w-4 h-4 text-rlorange" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M12.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
-            <span class="text-cyan-300">بلاتينيوم</span>
+          <div class="flex items-center justify-center gap-2 mb-6">
+            <div class="rank-badge w-10 h-10 bg-gradient-to-br from-yellow-400 to-amber-600">
+              <svg class="w-5 h-5 text-yellow-100" fill="currentColor" viewBox="0 0 20 20"><path d="M10 1l2.39 5.51L18 7.24l-4 4.24L15.02 18 10 15.27 4.98 18 6 11.48 2 7.24l5.61-.73L10 1z"/></svg>
+            </div>
+            <svg class="w-5 h-5 text-rlorange" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M12.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
+            <div class="rank-badge w-10 h-10 bg-gradient-to-br from-cyan-300 to-teal-500">
+              <svg class="w-5 h-5 text-cyan-50" fill="currentColor" viewBox="0 0 20 20"><path d="M10 1l2.39 5.51L18 7.24l-4 4.24L15.02 18 10 15.27 4.98 18 6 11.48 2 7.24l5.61-.73L10 1z"/></svg>
+            </div>
           </div>
-          <div class="text-4xl font-black gradient-text mb-1">13</div>
+          <div class="text-xs font-black mb-1"><span class="text-yellow-400">قولد</span> <span class="text-gray-500">←</span> <span class="text-cyan-300">بلاتينيوم</span></div>
+          <div class="text-4xl font-black gradient-text mb-1 mt-3">13</div>
           <div class="text-sm font-bold text-gray-400 mb-6">ريال سعودي</div>
           <a href="https://wa.me/97335596257?text=هلا%2C%20أبي%20أطلب%20رفع%20رانك%20من%20قولد%20إلى%20بلاتينيوم%20(13%20ريال)"
              target="_blank" rel="noopener"
@@ -228,14 +414,19 @@
         </div>
 
         <!-- Card 4 -->
-        <div class="rank-highlight glass rounded-2xl p-6 flex flex-col items-center text-center">
+        <div class="reveal rank-highlight glass rounded-2xl p-6 flex flex-col items-center text-center" style="transition-delay:0.15s">
           <div class="text-xs font-bold text-gray-400 mb-4 uppercase tracking-wider">المسار</div>
-          <div class="flex items-center justify-center gap-2 text-sm font-black mb-6">
-            <span class="text-cyan-300">بلاتينيوم</span>
-            <svg class="w-4 h-4 text-rlblue" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M12.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
-            <span class="text-sky-400">دايموند</span>
+          <div class="flex items-center justify-center gap-2 mb-6">
+            <div class="rank-badge w-10 h-10 bg-gradient-to-br from-cyan-300 to-teal-500">
+              <svg class="w-5 h-5 text-cyan-50" fill="currentColor" viewBox="0 0 20 20"><path d="M10 1l2.39 5.51L18 7.24l-4 4.24L15.02 18 10 15.27 4.98 18 6 11.48 2 7.24l5.61-.73L10 1z"/></svg>
+            </div>
+            <svg class="w-5 h-5 text-rlblue" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M12.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
+            <div class="rank-badge w-10 h-10 bg-gradient-to-br from-sky-400 to-blue-600">
+              <svg class="w-5 h-5 text-sky-50" fill="currentColor" viewBox="0 0 20 20"><path d="M10 1l2.39 5.51L18 7.24l-4 4.24L15.02 18 10 15.27 4.98 18 6 11.48 2 7.24l5.61-.73L10 1z"/></svg>
+            </div>
           </div>
-          <div class="text-4xl font-black gradient-text mb-1">18</div>
+          <div class="text-xs font-black mb-1"><span class="text-cyan-300">بلاتينيوم</span> <span class="text-gray-500">←</span> <span class="text-sky-400">دايموند</span></div>
+          <div class="text-4xl font-black gradient-text mb-1 mt-3">18</div>
           <div class="text-sm font-bold text-gray-400 mb-6">ريال سعودي</div>
           <a href="https://wa.me/97335596257?text=هلا%2C%20أبي%20أطلب%20رفع%20رانك%20من%20بلاتينيوم%20إلى%20دايموند%20(18%20ريال)"
              target="_blank" rel="noopener"
@@ -245,14 +436,19 @@
         </div>
 
         <!-- Card 5 -->
-        <div class="rank-highlight glass rounded-2xl p-6 flex flex-col items-center text-center">
+        <div class="reveal rank-highlight glass rounded-2xl p-6 flex flex-col items-center text-center" style="transition-delay:0.2s">
           <div class="text-xs font-bold text-gray-400 mb-4 uppercase tracking-wider">المسار</div>
-          <div class="flex items-center justify-center gap-2 text-sm font-black mb-6">
-            <span class="text-sky-400">دايموند</span>
-            <svg class="w-4 h-4 text-rlblue" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M12.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
-            <span class="text-purple-400">شامب</span>
+          <div class="flex items-center justify-center gap-2 mb-6">
+            <div class="rank-badge w-10 h-10 bg-gradient-to-br from-sky-400 to-blue-600">
+              <svg class="w-5 h-5 text-sky-50" fill="currentColor" viewBox="0 0 20 20"><path d="M10 1l2.39 5.51L18 7.24l-4 4.24L15.02 18 10 15.27 4.98 18 6 11.48 2 7.24l5.61-.73L10 1z"/></svg>
+            </div>
+            <svg class="w-5 h-5 text-rlblue" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M12.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
+            <div class="rank-badge w-10 h-10 bg-gradient-to-br from-purple-500 to-fuchsia-700">
+              <svg class="w-5 h-5 text-purple-50" fill="currentColor" viewBox="0 0 20 20"><path d="M2.5 6l3 2 4.5-5 4.5 5 3-2-1.5 9h-12L2.5 6zm2.4 10.5h10.2v1.5H4.9v-1.5z"/></svg>
+            </div>
           </div>
-          <div class="text-4xl font-black gradient-text mb-1">30</div>
+          <div class="text-xs font-black mb-1"><span class="text-sky-400">دايموند</span> <span class="text-gray-500">←</span> <span class="text-purple-400">شامب</span></div>
+          <div class="text-4xl font-black gradient-text mb-1 mt-3">30</div>
           <div class="text-sm font-bold text-gray-400 mb-6">ريال سعودي</div>
           <a href="https://wa.me/97335596257?text=هلا%2C%20أبي%20أطلب%20رفع%20رانك%20من%20دايموند%20إلى%20شامب%20(30%20ريال)"
              target="_blank" rel="noopener"
@@ -270,13 +466,13 @@
   <!-- Why us -->
   <section id="why" class="py-20 px-5">
     <div class="max-w-6xl mx-auto">
-      <div class="text-center mb-14">
+      <div class="text-center mb-14 reveal">
         <h2 class="text-3xl md:text-5xl font-black mb-4">ليش تختار <span class="gradient-text">3rab.store</span>؟</h2>
         <p class="text-gray-400 max-w-xl mx-auto">خدمة احترافية بثقة عالية وسرعة تنفيذ ما تلقاها بمكان ثاني</p>
       </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div class="glass rounded-2xl p-8 text-center hover:-translate-y-2 transition">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div class="reveal glass rounded-2xl p-8 text-center hover:-translate-y-2 transition">
           <div class="w-14 h-14 mx-auto mb-5 rounded-xl bg-rlblue/15 flex items-center justify-center">
             <svg class="w-7 h-7 text-rlblue" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
@@ -285,7 +481,7 @@
           <h3 class="font-black text-lg mb-2">تنفيذ سريع</h3>
           <p class="text-gray-400 text-sm leading-relaxed">نبدأ بطلبك بأسرع وقت ممكن ونوصلك للرانك المطلوب بدون تأخير.</p>
         </div>
-        <div class="glass rounded-2xl p-8 text-center hover:-translate-y-2 transition">
+        <div class="reveal glass rounded-2xl p-8 text-center hover:-translate-y-2 transition" style="transition-delay:0.05s">
           <div class="w-14 h-14 mx-auto mb-5 rounded-xl bg-rlorange/15 flex items-center justify-center">
             <svg class="w-7 h-7 text-rlorange" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12c0 4.556-3.86 8.25-8.625 8.25-.617 0-1.219-.06-1.802-.174C7.796 20.755 5.803 21 4.5 21c-.816 0-1.632-.052-2.437-.155a.75.75 0 01-.65-.65C1.052 19.634 1 18.816 1 18c0-1.303.245-3.296.924-6.573C1.06 10.844 1 10.242 1 9.625 1 5.06 4.694 1.2 9.25 1.2" />
@@ -294,7 +490,7 @@
           <h3 class="font-black text-lg mb-2">أمان وخصوصية</h3>
           <p class="text-gray-400 text-sm leading-relaxed">بياناتك وحسابك في أمان تام، ما نطلب منك أي معلومات حساسة.</p>
         </div>
-        <div class="glass rounded-2xl p-8 text-center hover:-translate-y-2 transition">
+        <div class="reveal glass rounded-2xl p-8 text-center hover:-translate-y-2 transition" style="transition-delay:0.1s">
           <div class="w-14 h-14 mx-auto mb-5 rounded-xl bg-rlblue/15 flex items-center justify-center">
             <svg class="w-7 h-7 text-rlblue" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 00-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 01-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 003 15h-.75M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -302,6 +498,15 @@
           </div>
           <h3 class="font-black text-lg mb-2">أسعار منافسة</h3>
           <p class="text-gray-400 text-sm leading-relaxed">أسعار مدروسة تناسب الجميع مع عروض لفترة محدودة على كل الرتب.</p>
+        </div>
+        <div class="reveal glass rounded-2xl p-8 text-center hover:-translate-y-2 transition" style="transition-delay:0.15s">
+          <div class="w-14 h-14 mx-auto mb-5 rounded-xl bg-rlorange/15 flex items-center justify-center">
+            <svg class="w-7 h-7 text-rlorange" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25S3 16.556 3 12 7.03 3.75 12 3.75 21 7.444 21 12z" />
+            </svg>
+          </div>
+          <h3 class="font-black text-lg mb-2">دعم فوري</h3>
+          <p class="text-gray-400 text-sm leading-relaxed">فريق دعم متواجد على واتساب للرد على استفساراتك بأي وقت.</p>
         </div>
       </div>
     </div>
@@ -312,12 +517,12 @@
   <!-- FAQ -->
   <section id="faq" class="py-20 px-5">
     <div class="max-w-3xl mx-auto">
-      <div class="text-center mb-12">
+      <div class="text-center mb-12 reveal">
         <h2 class="text-3xl md:text-5xl font-black mb-4">الأسئلة <span class="gradient-text">الشائعة</span></h2>
       </div>
 
       <div class="space-y-4">
-        <details class="glass rounded-xl p-5 group" open>
+        <details class="reveal glass rounded-xl p-5 group" open>
           <summary class="font-bold cursor-pointer flex justify-between items-center list-none">
             كيف أطلب الخدمة؟
             <span class="text-rlblue group-open:rotate-180 transition">▾</span>
@@ -326,7 +531,7 @@
             تضغط على زر واتساب في الأعلى، وترسل لنا الرانك الحالي والرانك المطلوب، وبنتواصل معك فوراً لإتمام الطلب.
           </p>
         </details>
-        <details class="glass rounded-xl p-5 group">
+        <details class="reveal glass rounded-xl p-5 group" style="transition-delay:0.05s">
           <summary class="font-bold cursor-pointer flex justify-between items-center list-none">
             هل الخدمة متوفرة لطور 2v2 فقط؟
             <span class="text-rlblue group-open:rotate-180 transition">▾</span>
@@ -335,7 +540,7 @@
             حالياً خدمتنا مخصصة لرفع الرانك في طور 2v2 (Doubles) فقط.
           </p>
         </details>
-        <details class="glass rounded-xl p-5 group">
+        <details class="reveal glass rounded-xl p-5 group" style="transition-delay:0.1s">
           <summary class="font-bold cursor-pointer flex justify-between items-center list-none">
             هل الأسعار ثابتة؟
             <span class="text-rlblue group-open:rotate-180 transition">▾</span>
@@ -350,7 +555,7 @@
 
   <!-- Final CTA -->
   <section class="py-20 px-5">
-    <div class="max-w-4xl mx-auto glass rounded-3xl p-10 md:p-14 text-center relative overflow-hidden">
+    <div class="reveal max-w-4xl mx-auto glass rounded-3xl p-10 md:p-14 text-center relative overflow-hidden">
       <div class="absolute -top-10 -left-10 w-40 h-40 bg-rlblue/20 rounded-full blur-3xl animate-float"></div>
       <div class="absolute -bottom-10 -right-10 w-40 h-40 bg-rlorange/20 rounded-full blur-3xl animate-float"></div>
       <h2 class="relative z-10 text-3xl md:text-4xl font-black mb-4">
@@ -382,6 +587,44 @@
      class="md:hidden fixed bottom-5 left-5 z-50 w-14 h-14 rounded-full bg-[#25D366] flex items-center justify-center whatsapp-float">
     <svg class="w-7 h-7 text-white" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"></path><path d="M12.001 2c-5.523 0-10 4.477-10 10 0 1.821.487 3.53 1.338 5.003l-1.395 5.09 5.213-1.368c1.415.773 3.038 1.215 4.844 1.215h.004c5.523 0 10-4.477 10-10 0-2.671-1.041-5.182-2.929-7.071-1.889-1.889-4.4-2.869-7.075-2.869zm0 18.163h-.003c-1.596 0-3.16-.428-4.523-1.239l-.324-.192-3.393.891.906-3.309-.211-.34c-.889-1.415-1.358-3.048-1.358-4.734 0-4.826 3.928-8.754 8.754-8.754 4.826 0 8.754 3.928 8.754 8.754 0 4.826-3.926 8.923-8.752 8.923z"></path></svg>
   </a>
+
+  <script>
+    // Header background on scroll
+    const header = document.getElementById('site-header');
+    window.addEventListener('scroll', () => {
+      if (window.scrollY > 10) header.classList.add('scrolled-header');
+      else header.classList.remove('scrolled-header');
+    });
+
+    // Mobile menu toggle
+    const menuBtn = document.getElementById('menu-btn');
+    const mobileMenu = document.getElementById('mobile-menu');
+    const iconOpen = document.getElementById('menu-icon-open');
+    const iconClose = document.getElementById('menu-icon-close');
+    let menuOpen = false;
+    function toggleMenu(force) {
+      menuOpen = force !== undefined ? force : !menuOpen;
+      mobileMenu.classList.toggle('opacity-0', !menuOpen);
+      mobileMenu.classList.toggle('invisible', !menuOpen);
+      iconOpen.classList.toggle('hidden', menuOpen);
+      iconClose.classList.toggle('hidden', !menuOpen);
+      document.body.style.overflow = menuOpen ? 'hidden' : '';
+    }
+    menuBtn.addEventListener('click', () => toggleMenu());
+    document.querySelectorAll('.mobile-link').forEach(a => a.addEventListener('click', () => toggleMenu(false)));
+
+    // Scroll reveal animations
+    const revealEls = document.querySelectorAll('.reveal');
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('in-view');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.15 });
+    revealEls.forEach(el => observer.observe(el));
+  </script>
 
 </body>
 </html>
