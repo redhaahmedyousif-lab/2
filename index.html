@@ -4,7 +4,19 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>3rab.store | رفع رانك روكيت ليق 2v2</title>
+<meta name="description" content="خدمة رفع رانك روكيت ليق (2v2) بأيدي محترفين، بسرعة وخصوصية تامة وأسعار منافسة لفترة محدودة. تواصل معنا الآن على واتساب.">
+<meta name="theme-color" content="#05070d">
 <link rel="icon" type="image/jpeg" href="assets/logo.jpg">
+<link rel="apple-touch-icon" href="assets/logo.jpg">
+<meta property="og:type" content="website">
+<meta property="og:title" content="3rab.store | رفع رانك روكيت ليق 2v2">
+<meta property="og:description" content="خدمة رفع رانك روكيت ليق (2v2) بأيدي محترفين، بسرعة وخصوصية تامة وأسعار منافسة لفترة محدودة.">
+<meta property="og:image" content="https://redhaahmedyousif-lab.github.io/2/assets/logo.jpg">
+<meta property="og:url" content="https://redhaahmedyousif-lab.github.io/2/">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="3rab.store | رفع رانك روكيت ليق 2v2">
+<meta name="twitter:description" content="خدمة رفع رانك روكيت ليق (2v2) بأيدي محترفين، بسرعة وخصوصية تامة وأسعار منافسة لفترة محدودة.">
+<meta name="twitter:image" content="https://redhaahmedyousif-lab.github.io/2/assets/logo.jpg">
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
@@ -142,6 +154,10 @@
   .tiktok-btn:hover {
     color: #ff7a1a;
     transform: translateY(-2px);
+  }
+  select option {
+    background: #0b0f1a;
+    color: #fff;
   }
 </style>
 </head>
@@ -696,7 +712,7 @@
   <footer class="py-8 px-5 border-t border-white/10">
     <div class="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-5 text-sm text-gray-500">
       <div class="flex items-center gap-3">
-        <img src="assets/logo.jpg" alt="3rab.store" class="logo-mark w-8 h-8 rounded-lg object-cover object-top">
+        <img src="assets/logo.jpg" alt="3rab.store" loading="lazy" class="logo-mark w-8 h-8 rounded-lg object-cover object-top">
         <span>© 2026 <span class="text-gray-300 font-bold">3rab.store</span> — جميع الحقوق محفوظة</span>
       </div>
       <div class="flex items-center gap-5">
@@ -722,7 +738,7 @@
     window.addEventListener('scroll', () => {
       if (window.scrollY > 10) header.classList.add('scrolled-header');
       else header.classList.remove('scrolled-header');
-    });
+    }, { passive: true });
 
     // Mobile menu toggle
     const menuBtn = document.getElementById('menu-btn');
@@ -811,7 +827,7 @@
           observer.unobserve(entry.target);
         }
       });
-    }, { threshold: 0.15 });
+    }, { threshold: 0.15, rootMargin: '0px 0px -40px 0px' });
     revealEls.forEach(el => observer.observe(el));
   </script>
 
