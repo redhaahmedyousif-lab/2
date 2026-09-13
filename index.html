@@ -17,6 +17,32 @@
 <meta name="twitter:title" content="3rab.store | رفع رانك روكيت ليق 2v2">
 <meta name="twitter:description" content="خدمة رفع رانك روكيت ليق (2v2) بأيدي محترفين، بسرعة وخصوصية تامة وأسعار منافسة لفترة محدودة.">
 <meta name="twitter:image" content="https://redhaahmedyousif-lab.github.io/2/assets/logo.jpg">
+<meta name="robots" content="index, follow">
+<link rel="manifest" href="manifest.json">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="3rab.store">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Service",
+  "name": "3rab.store - رفع رانك روكيت ليق",
+  "serviceType": "خدمة رفع رانك في لعبة Rocket League (2v2)",
+  "provider": {
+    "@type": "Organization",
+    "name": "3rab.store",
+    "sameAs": ["https://www.tiktok.com/@3rab.stor"]
+  },
+  "areaServed": "SA",
+  "priceRange": "6-30 SAR",
+  "offers": {
+    "@type": "AggregateOffer",
+    "priceCurrency": "SAR",
+    "lowPrice": "6",
+    "highPrice": "30"
+  }
+}
+</script>
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
@@ -63,6 +89,27 @@
 </script>
 <style>
   html { scroll-behavior: smooth; overflow-x: hidden; max-width: 100%; }
+  section[id] { scroll-margin-top: 88px; }
+  a:focus-visible, button:focus-visible, select:focus-visible, summary:focus-visible {
+    outline: 2px solid #00d4ff;
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+  .skip-link {
+    position: absolute;
+    right: 1rem;
+    top: -60px;
+    background: #00d4ff;
+    color: #05070d;
+    font-weight: 900;
+    padding: 0.6rem 1.2rem;
+    border-radius: 9999px;
+    z-index: 60;
+    transition: top 0.2s ease;
+  }
+  .skip-link:focus {
+    top: 1rem;
+  }
   body {
     font-family: 'Tajawal', sans-serif;
     background-color: #05070d;
@@ -163,6 +210,8 @@
 </head>
 <body class="text-white min-h-screen overflow-x-hidden">
 
+  <a href="#hero" class="skip-link">تخطي إلى المحتوى</a>
+
   <!-- Header -->
   <header id="site-header" class="fixed top-0 inset-x-0 z-40 transition-colors duration-300">
     <div class="max-w-7xl mx-auto px-5 py-4 flex items-center justify-between">
@@ -218,6 +267,7 @@
     </a>
   </div>
 
+  <main>
   <!-- Hero -->
   <section id="hero" class="relative min-h-screen flex items-center justify-center px-5 pt-24 pb-10 sm:pt-28 sm:pb-16 bg-grid">
     <!-- decorative glows -->
@@ -707,6 +757,8 @@
       </a>
     </div>
   </section>
+
+  </main>
 
   <!-- Footer -->
   <footer class="py-8 px-5 border-t border-white/10">
