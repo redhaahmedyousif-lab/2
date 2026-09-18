@@ -2,82 +2,139 @@
 
 import { useState, useCallback, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { RefreshCw, Copy, Check, Download, ShieldAlert, Cpu } from "lucide-react";
+import { RefreshCw, Copy, Check, Download, ShieldAlert, Cpu, Languages } from "lucide-react";
+
+type Lang = "en" | "ar";
+type Threat = "LOW" | "MODERATE" | "HIGH" | "CRITICAL";
 
 interface Persona {
-  codename: string;
-  title: string;
-  faction: string;
+  prefixIndex: number;
+  coreIndex: number;
+  jobIndex: number;
+  factionIndex: number;
   serial: string;
   power: number;
-  threat: "LOW" | "MODERATE" | "HIGH" | "CRITICAL";
+  threat: Threat;
   pixels: string[];
 }
 
-const PREFIXES = [
-  "Neon",
-  "Cyber",
-  "Ghost",
-  "Quantum",
-  "Chrome",
-  "Void",
-  "Nova",
-  "Shadow",
-  "Static",
-  "Drift",
-  "Binary",
-  "Rogue",
-  "Astral",
-  "Synth",
-  "Iron",
-];
+const PREFIXES: Record<Lang, string[]> = {
+  en: ["Neon", "Cyber", "Ghost", "Quantum", "Chrome", "Void", "Nova", "Shadow", "Static", "Drift", "Binary", "Rogue", "Astral", "Synth", "Iron"],
+  ar: ["نيون", "سايبر", "شبح", "كمّي", "كروم", "العدم", "نوفا", "ظل", "ثابت", "انجراف", "ثنائي", "مارق", "نجمي", "تخليقي", "حديدي"],
+};
 
-const CORES = [
-  "Vector",
-  "Phantom",
-  "Wraith",
-  "Circuit",
-  "Cipher",
-  "Echo",
-  "Fracture",
-  "Specter",
-  "Glitch",
-  "Nexus",
-  "Prism",
-  "Havoc",
-  "Pulse",
-  "Ronin",
-  "Mirage",
-];
+const CORES: Record<Lang, string[]> = {
+  en: ["Vector", "Phantom", "Wraith", "Circuit", "Cipher", "Echo", "Fracture", "Specter", "Glitch", "Nexus", "Prism", "Havoc", "Pulse", "Ronin", "Mirage"],
+  ar: ["متجه", "فانتوم", "هائم", "دائرة", "شيفرة", "صدى", "كسر", "طيف", "علة", "ترابط", "منشور", "فوضى", "نبضة", "رونين", "سراب"],
+};
 
-const JOB_TITLES = [
-  "Quantum Code Architect",
-  "Sub-space Data Broker",
-  "Neural Net Smuggler",
-  "Holographic Memory Thief",
-  "Chrono-Signal Hacker",
-  "Synthetic Dream Curator",
-  "Black-Market Firmware Dealer",
-  "Orbital Grid Saboteur",
-  "Bio-Digital Mercenary",
-  "Encrypted Ghost Courier",
-  "Neuro-Link Interrogator",
-  "Fractal Signal Cartographer",
-  "Rogue AI Whisperer",
-  "Deep-Net Bounty Hunter",
-  "Synaptic Firewall Breaker",
-];
+const JOB_TITLES: Record<Lang, string[]> = {
+  en: [
+    "Quantum Code Architect",
+    "Sub-space Data Broker",
+    "Neural Net Smuggler",
+    "Holographic Memory Thief",
+    "Chrono-Signal Hacker",
+    "Synthetic Dream Curator",
+    "Black-Market Firmware Dealer",
+    "Orbital Grid Saboteur",
+    "Bio-Digital Mercenary",
+    "Encrypted Ghost Courier",
+    "Neuro-Link Interrogator",
+    "Fractal Signal Cartographer",
+    "Rogue AI Whisperer",
+    "Deep-Net Bounty Hunter",
+    "Synaptic Firewall Breaker",
+  ],
+  ar: [
+    "مهندس الشيفرة الكمّية",
+    "سمسار بيانات الفضاء التحتي",
+    "مهرّب الشبكات العصبية",
+    "لص الذاكرة الهولوغرافية",
+    "مخترق الإشارات الزمنية",
+    "أمين الأحلام الاصطناعية",
+    "تاجر البرمجيات الثابتة في السوق السوداء",
+    "مخرّب الشبكة المدارية",
+    "مرتزق حيوي-رقمي",
+    "ساعي الأشباح المشفّر",
+    "محقق الروابط العصبية",
+    "راسم خرائط الإشارات الكسورية",
+    "مروّض الذكاء الاصطناعي المارق",
+    "صياد جوائز الشبكة العميقة",
+    "كاسر جدار الحماية المشبكي",
+  ],
+};
 
-const FACTIONS = [
-  "Sector 9 Underground",
-  "Neo-Kyoto Black Market",
-  "Orbital Ring Collective",
-  "The Static Choir",
-  "Chrome Cathedral Syndicate",
-  "Zero-Light District",
-  "The Unlisted Network",
-  "Ashfall Combine",
-];
+const FACTIONS: Record<Lang, string[]> = {
+  en: [
+    "Sector 9 Underground",
+    "Neo-Kyoto Black Market",
+    "Orbital Ring Collective",
+    "The Static Choir",
+    "Chrome Cathedral Syndicate",
+    "Zero-Light District",
+    "The Unlisted Network",
+    "Ashfall Combine",
+  ],
+  ar: [
+    "الحي السفلي - القطاع 9",
+    "السوق السوداء - نيو كيوتو",
+    "تحالف الحلقة المدارية",
+    "جوقة التشويش",
+    "نقابة كاتدرائية الكروم",
+    "حي انعدام الضوء",
+    "الشبكة غير المسجّلة",
+    "اتحاد الرماد المتساقط",
+  ],
+};
+
+const THREAT_LABELS: Record<Lang, Record<Threat, string>> = {
+  en: { LOW: "LOW", MODERATE: "MODERATE", HIGH: "HIGH", CRITICAL: "CRITICAL" },
+  ar: { LOW: "منخفض", MODERATE: "متوسط", HIGH: "مرتفع", CRITICAL: "حرج" },
+};
+
+const UI_TEXT: Record<Lang, {
+  subjectFile: string;
+  powerLevel: string;
+  generate: string;
+  sector: string;
+  copyLabel: string;
+  downloadLabel: string;
+  summary: { codename: string; designation: string; affiliation: string; serial: string; power: string; threat: string };
+}> = {
+  en: {
+    subjectFile: "Subject File",
+    powerLevel: "Power Level",
+    generate: "Generate New Persona",
+    sector: "Sector",
+    copyLabel: "Copy persona data",
+    downloadLabel: "Download persona file",
+    summary: {
+      codename: "CODENAME",
+      designation: "DESIGNATION",
+      affiliation: "AFFILIATION",
+      serial: "SERIAL",
+      power: "POWER LEVEL",
+      threat: "THREAT",
+    },
+  },
+  ar: {
+    subjectFile: "ملف الهوية",
+    powerLevel: "مستوى الطاقة",
+    generate: "توليد هوية جديدة",
+    sector: "قطاع",
+    copyLabel: "نسخ بيانات الهوية",
+    downloadLabel: "تحميل ملف الهوية",
+    summary: {
+      codename: "الاسم الرمزي",
+      designation: "المسمى الوظيفي",
+      affiliation: "الانتماء",
+      serial: "الرقم التسلسلي",
+      power: "مستوى الطاقة",
+      threat: "التهديد",
+    },
+  },
+};
 
 const PIXEL_COLORS = ["#22d3ee", "#f472b6", "#a855f7", "#facc15", "#34d399", "transparent"];
 
@@ -86,24 +143,25 @@ const DEFAULT_PIXELS = Array.from({ length: 25 }, (_, i) =>
 );
 
 const DEFAULT_PERSONA: Persona = {
-  codename: "Neon Vector",
-  title: "Quantum Code Architect",
-  faction: "Neo-Kyoto Black Market",
+  prefixIndex: 0,
+  coreIndex: 0,
+  jobIndex: 0,
+  factionIndex: 1,
   serial: "PX-0001-A0",
   power: 62,
   threat: "HIGH",
   pixels: DEFAULT_PIXELS,
 };
 
-const THREAT_STYLES: Record<Persona["threat"], string> = {
+const THREAT_STYLES: Record<Threat, string> = {
   LOW: "text-emerald-400 border-emerald-400/40 bg-emerald-400/10",
   MODERATE: "text-cyan-400 border-cyan-400/40 bg-cyan-400/10",
   HIGH: "text-fuchsia-400 border-fuchsia-400/40 bg-fuchsia-400/10",
   CRITICAL: "text-rose-400 border-rose-400/40 bg-rose-400/10",
 };
 
-function randomFrom<T>(arr: T[]): T {
-  return arr[Math.floor(Math.random() * arr.length)];
+function randomIndex(length: number): number {
+  return Math.floor(Math.random() * length);
 }
 
 function randomSerial(): string {
@@ -120,7 +178,7 @@ function generatePixels(): string[] {
   for (let row = 0; row < 5; row++) {
     const cols: string[] = [];
     for (let col = 0; col < 3; col++) {
-      cols.push(randomFrom(PIXEL_COLORS));
+      cols.push(PIXEL_COLORS[randomIndex(PIXEL_COLORS.length)]);
     }
     half.push(cols);
   }
@@ -131,7 +189,7 @@ function generatePixels(): string[] {
   return grid;
 }
 
-function threatFromPower(power: number): Persona["threat"] {
+function threatFromPower(power: number): Threat {
   if (power >= 90) return "CRITICAL";
   if (power >= 65) return "HIGH";
   if (power >= 35) return "MODERATE";
@@ -141,9 +199,10 @@ function threatFromPower(power: number): Persona["threat"] {
 function generatePersona(): Persona {
   const power = Math.floor(Math.random() * 80) + 15;
   return {
-    codename: `${randomFrom(PREFIXES)} ${randomFrom(CORES)}`,
-    title: randomFrom(JOB_TITLES),
-    faction: randomFrom(FACTIONS),
+    prefixIndex: randomIndex(PREFIXES.en.length),
+    coreIndex: randomIndex(CORES.en.length),
+    jobIndex: randomIndex(JOB_TITLES.en.length),
+    factionIndex: randomIndex(FACTIONS.en.length),
     serial: randomSerial(),
     power,
     threat: threatFromPower(power),
@@ -152,6 +211,7 @@ function generatePersona(): Persona {
 }
 
 export default function GlitchPersonaGenerator() {
+  const [lang, setLang] = useState<Lang>("en");
   const [persona, setPersona] = useState<Persona>(DEFAULT_PERSONA);
   const [isGlitching, setIsGlitching] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -194,7 +254,13 @@ export default function GlitchPersonaGenerator() {
     return () => cancelAnimationFrame(raf);
   }, [persona.power]);
 
-  const summaryText = `CODENAME: ${persona.codename}\nDESIGNATION: ${persona.title}\nAFFILIATION: ${persona.faction}\nSERIAL: ${persona.serial}\nPOWER LEVEL: ${persona.power}\nTHREAT: ${persona.threat}`;
+  const t = UI_TEXT[lang];
+  const codename = `${PREFIXES[lang][persona.prefixIndex]} ${CORES[lang][persona.coreIndex]}`;
+  const jobTitle = JOB_TITLES[lang][persona.jobIndex];
+  const faction = FACTIONS[lang][persona.factionIndex];
+  const threatLabel = THREAT_LABELS[lang][persona.threat];
+
+  const summaryText = `${t.summary.codename}: ${codename}\n${t.summary.designation}: ${jobTitle}\n${t.summary.affiliation}: ${faction}\n${t.summary.serial}: ${persona.serial}\n${t.summary.power}: ${persona.power}\n${t.summary.threat}: ${threatLabel}`;
 
   const handleCopy = useCallback(async () => {
     try {
@@ -211,13 +277,16 @@ export default function GlitchPersonaGenerator() {
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.download = `${persona.codename.replace(/\s+/g, "_").toLowerCase()}.txt`;
+    link.download = `${codename.replace(/\s+/g, "_").toLowerCase()}.txt`;
     link.click();
     URL.revokeObjectURL(url);
-  }, [summaryText, persona.codename]);
+  }, [summaryText, codename]);
 
   return (
-    <main className="relative flex min-h-screen w-full items-center justify-center overflow-hidden bg-[#050508] px-4 py-16">
+    <main
+      dir={lang === "ar" ? "rtl" : "ltr"}
+      className="relative flex min-h-screen w-full items-center justify-center overflow-hidden bg-[#050508] px-4 py-16"
+    >
       <div
         className="pointer-events-none absolute inset-0 opacity-40"
         style={{
@@ -243,6 +312,16 @@ export default function GlitchPersonaGenerator() {
         transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
       />
 
+      <button
+        onClick={() => setLang((l) => (l === "en" ? "ar" : "en"))}
+        dir="ltr"
+        className="absolute right-4 top-4 z-20 flex items-center gap-1.5 rounded-full border border-white/15 bg-white/5 px-3 py-1.5 font-mono text-[11px] uppercase tracking-wider text-white/60 backdrop-blur-md transition-colors hover:bg-white/10 sm:right-6 sm:top-6"
+        aria-label="Toggle language"
+      >
+        <Languages className="h-3.5 w-3.5" />
+        {lang === "en" ? "عربي" : "EN"}
+      </button>
+
       <motion.div
         initial={{ opacity: 0, y: 24 }}
         animate={{ opacity: 1, y: 0 }}
@@ -250,8 +329,8 @@ export default function GlitchPersonaGenerator() {
         className="relative z-10 w-full max-w-md rounded-2xl border border-cyan-400/30 bg-black/70 p-6 shadow-[0_0_60px_-10px_rgba(34,211,238,0.35)] backdrop-blur-xl sm:p-8"
       >
         <div className="mb-6 flex items-center justify-between font-mono text-[11px] uppercase tracking-[0.25em] text-cyan-400/70">
-          <span>Subject File</span>
-          <span>{persona.serial}</span>
+          <span>{t.subjectFile}</span>
+          <span dir="ltr">{persona.serial}</span>
         </div>
 
         <div className="mb-6 flex items-center gap-5">
@@ -276,25 +355,25 @@ export default function GlitchPersonaGenerator() {
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
                 >
-                  <GlitchLabel text={persona.codename} />
+                  <GlitchLabel text={codename} />
                 </motion.div>
               ) : (
                 <motion.h1
-                  key={persona.codename}
-                  initial={{ opacity: 0, x: -6 }}
+                  key={codename + lang}
+                  initial={{ opacity: 0, x: lang === "ar" ? 6 : -6 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ duration: 0.3 }}
                   className="truncate text-xl font-bold uppercase tracking-wide text-white sm:text-2xl"
                   style={{ textShadow: "0 0 18px rgba(34,211,238,0.5)" }}
                 >
-                  {persona.codename}
+                  {codename}
                 </motion.h1>
               )}
             </AnimatePresence>
             <p className="mt-1 truncate font-mono text-xs uppercase tracking-wider text-fuchsia-400/80">
-              {persona.title}
+              {jobTitle}
             </p>
-            <p className="mt-1 truncate text-[11px] text-white/40">{persona.faction}</p>
+            <p className="mt-1 truncate text-[11px] text-white/40">{faction}</p>
           </div>
         </div>
 
@@ -303,18 +382,18 @@ export default function GlitchPersonaGenerator() {
             className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 font-mono text-[10px] uppercase tracking-wider ${THREAT_STYLES[persona.threat]}`}
           >
             <ShieldAlert className="h-3 w-3" />
-            {persona.threat}
+            {threatLabel}
           </span>
           <span className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-2.5 py-1 font-mono text-[10px] uppercase tracking-wider text-white/50">
             <Cpu className="h-3 w-3" />
-            Sector {persona.serial.slice(3, 5)}
+            {t.sector} <span dir="ltr">{persona.serial.slice(3, 5)}</span>
           </span>
         </div>
 
         <div className="mb-7">
           <div className="mb-1.5 flex items-center justify-between font-mono text-[11px] uppercase tracking-[0.2em] text-white/50">
-            <span>Power Level</span>
-            <span className="text-cyan-300">{displayedPower}%</span>
+            <span>{t.powerLevel}</span>
+            <span className="text-cyan-300" dir="ltr">{displayedPower}%</span>
           </div>
           <div className="h-2.5 w-full overflow-hidden rounded-full bg-white/5 ring-1 ring-white/10">
             <motion.div
@@ -336,7 +415,7 @@ export default function GlitchPersonaGenerator() {
             className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-cyan-500 to-fuchsia-500 px-4 py-2.5 font-mono text-xs font-semibold uppercase tracking-wider text-black shadow-[0_0_25px_-5px_rgba(34,211,238,0.6)] transition-opacity disabled:opacity-70"
           >
             <RefreshCw className={`h-3.5 w-3.5 ${isGlitching ? "animate-spin" : ""}`} />
-            Generate New Persona
+            {t.generate}
           </motion.button>
 
           <motion.button
@@ -344,7 +423,7 @@ export default function GlitchPersonaGenerator() {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             className="flex h-10 w-10 items-center justify-center rounded-lg border border-white/15 bg-white/5 text-white/70 transition-colors hover:bg-white/10"
-            aria-label="Copy persona data"
+            aria-label={t.copyLabel}
           >
             {copied ? <Check className="h-4 w-4 text-emerald-400" /> : <Copy className="h-4 w-4" />}
           </motion.button>
@@ -354,7 +433,7 @@ export default function GlitchPersonaGenerator() {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             className="flex h-10 w-10 items-center justify-center rounded-lg border border-white/15 bg-white/5 text-white/70 transition-colors hover:bg-white/10"
-            aria-label="Download persona file"
+            aria-label={t.downloadLabel}
           >
             <Download className="h-4 w-4" />
           </motion.button>
